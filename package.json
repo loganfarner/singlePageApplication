@@ -3,10 +3,10 @@
     "description": "RESTful Web Server and Single Page Application",
     "version": "1.0.0",
     "author": {
-        "name": "",
-        "email": ""
+        "name": "Logan Farner",
+        "email": "logan.farner@stthomas.edu"
     },
-    "contributors": [
+    "contributors": [ "Will Haldine", "Cesar G"
     ],
     "repository": {},
     "scripts": {
