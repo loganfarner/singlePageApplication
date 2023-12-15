@@ -77,6 +77,9 @@ onMounted(() => {
 function initializeCrimes() {
     // TODO: get code and neighborhood data
     //       get initial 1000 crimes
+
+    let nw_bounds = leaflet.map.bounds.nw;
+    let se_bounds = leaflet.map.bounds.se;
 }
 
 // Function called when user presses 'OK' on dialog box
@@ -150,6 +153,7 @@ async function searchAndSetLocation() {
         map.leaflet.setView([map.center.lat, map.center.lng], 16);
     }
 }
+
 
 </script>
 
