@@ -95,7 +95,13 @@ function initializeCrimes() {
         .then((data) => {
             // Assuming the response is an array of crimes
             console.log('Data received:', data);
-            crimes.splice(0, crimes.length, ...data);
+
+            //crimes.splice(0, crimes.length, ...data);
+            crimes.splice(0, crimes.lengh);
+            data.forEach(crime => {
+                crimes.push(crime);
+            });
+
         })
         .catch((error) => {
             console.error('Error fetching data:', error.message);
@@ -274,12 +280,18 @@ function apiURL() {
                 <tr>
                     <th>Code</th>
                     <th>Neighborhood</th>
+                    <th>Incident</th>
+                    <th>Date</th>
+                    <th>Time</th>
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="item in crime_url">
+                <tr v-for="item in crimes">
                     <td>{{ item.code }}</td>
-                    <td>{{ item.neighborhood }}</td>
+                    <td>{{ item.neighborhood_number }}</td>
+                    <td>{{ item.incident }}</td>
+                    <td>{{ item.date }}</td>
+                    <td>{{ item.time }}</td>
                     
                 </tr>
             </tbody>
