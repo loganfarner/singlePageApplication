@@ -6,7 +6,9 @@
         "name": "Logan Farner",
         "email": "logan.farner@stthomas.edu"
     },
-    "contributors": [ "Will Haldane", "Cesar Gonzalez"
+    "contributors": [
+        "Will Haldane",
+        "Cesar Gonzalez"
     ],
     "repository": {},
     "scripts": {
@@ -15,6 +17,7 @@
         "preview": "vite preview"
     },
     "dependencies": {
+        "cors": "^2.8.5",
         "express": "^4.18.2",
         "sqlite3": "^5.1.6",
         "vue": "^3.3.4"
