@@ -21,8 +21,8 @@ let map = reactive(
             se: { lat: 44.883658, lng: -92.993787 }
         },
         neighborhood_markers: [
-            { location: [44.942068, -93.020521], marker: null },
-            { location: [44.977413, -93.025156], marker: null },
+            { location: [44.942068, -93.020521], marker: "1" },
+            { location: [44.977413, -93.025156], marker: 2 },
             { location: [44.931244, -93.079578], marker: null },
             { location: [44.956192, -93.060189], marker: null },
             { location: [44.978883, -93.068163], marker: null },
@@ -72,6 +72,13 @@ onMounted(() => {
         });
 });
 
+function getNeighborhoodMarker(){
+    let location = 
+    map.neighborhood_markers.forEach(neighborhood => {
+        if(neighborhood.location){}
+    })
+    map.center.lat
+}
 
 // FUNCTIONS
 // Function called once user has entered REST API URL
@@ -84,6 +91,7 @@ function initializeCrimes() {
     let params = {
         nieghborhood_number: 1
     }
+
 
     fetch(url)//,  {mode: 'no-cors'})//, params)
         .then((response) => {
@@ -252,7 +260,11 @@ function apiURL() {
     return `${baseUrl}${queryParams ? `?${queryParams}` : ''}`;
 }
 
-
+let neighborhood_names = {
+    1: 'battle',
+    2: '#2',
+    3: '#3',
+}
 
 </script>
 
@@ -288,7 +300,7 @@ function apiURL() {
             <tbody>
                 <tr v-for="item in crimes">
                     <td>{{ item.code }}</td>
-                    <td>{{ item.neighborhood_number }}</td>
+                    <td>{{ neighborhood_names[item.neighborhood_number] }}</td>
                     <td>{{ item.incident }}</td>
                     <td>{{ item.date }}</td>
                     <td>{{ item.time }}</td>
