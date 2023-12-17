@@ -6,6 +6,7 @@ let dialog_err = ref(false);
 let searchLocation = ref('');
 let locationInputRef = ref(null);
 let updateTimer = null;
+let crimes = reactive([])
 let map = reactive(
     {
         leaflet: null,
@@ -77,9 +78,25 @@ onMounted(() => {
 function initializeCrimes() {
     // TODO: get code and neighborhood data
     //       get initial 1000 crimes
-
-    let nw_bounds = leaflet.map.bounds.nw;
-    let se_bounds = leaflet.map.bounds.se;
+    fetch(crime_url.value)
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then((data) => {
+            // Assuming the response is an array of crimes
+            console.log('Data received:', data);
+            crimes.splice(0, crimes.length, ...data);
+        })
+        .catch((error) => {
+            console.error('Error fetching data:', error.message);
+            // Log any additional details available in the error object
+            if (error.name === 'AbortError') {
+                console.error('The fetch operation was aborted.');
+            }
+        });
 }
 
 // Function called when user presses 'OK' on dialog box
@@ -137,22 +154,90 @@ function updateInputFromMap() {
 
 // Function to search for location and update the map
 async function searchAndSetLocation() {
-    const apiUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${searchLocation.value}&limit=1`;
-    const response = await fetch(apiUrl);
-    const data = await response.json();
+    try{
+        const apiUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${searchLocation.value}&limit=1`;
+        const response = await fetch(apiUrl);
+        const data = await response.json();
 
-    if (data.length > 0) {
-        const location = data[0];
-        const lat = parseFloat(location.lat);
-        const lng = parseFloat(location.lon);
+        if (data.length > 0) {
+            const location = data[0];
+            const lat = parseFloat(location.lat);
+            const lng = parseFloat(location.lon);
 
-        // Clamp input values if lat/long is outside of St. Paul's bounding box
-        map.center.lat = Math.min(map.bounds.nw.lat, Math.max(map.bounds.se.lat, lat));
-        map.center.lng = Math.min(map.bounds.se.lng, Math.max(map.bounds.nw.lng, lng));
+            // Clamp input values if lat/long is outside of St. Paul's bounding box
+            map.center.lat = Math.min(map.bounds.nw.lat, Math.max(map.bounds.se.lat, lat));
+            map.center.lng = Math.min(map.bounds.se.lng, Math.max(map.bounds.nw.lng, lng));
 
-        map.leaflet.setView([map.center.lat, map.center.lng], 16);
+            map.leaflet.setView([map.center.lat, map.center.lng], 16);
+        }
+    }catch (error) {
+        console.error('Error fetching data:', error);
     }
 }
+
+let selectedIncidentTypes = reactive([]);
+let selectedNeighborhoods = reactive([]);
+let startDate = ref('');
+let endDate = ref('');
+let maxIncidents = ref('');
+
+// const incidentTypes = {
+//     "Homicide": [100, 110, 120],
+//     "Robbery": [300, 311, 312, 313, 314, 321, 322, 323, 324, 331, 332, 333, 334, 341, 342, 343, 344, 351, 352, 353, 354, 361, 362, 363, 364, 371, 372, 373, 374],
+//     "Aggravated Assault": [400, 410, 411, 412, 420, 421, 422, 430, 431, 432, 440, 441, 442, 450, 451, 452, 453],
+//     "Burglary": [500, 510, 511, 513, 515, 516, 520, 521, 523, 525, 526, 530, 531, 533, 535, 536, 540, 541, 543, 545, 546, 550, 551, 553, 555, 556, 560, 561, 563, 565, 566],
+//     "Theft": [600, 601, 603, 611, 612, 613, 614, 621, 622, 623, 630, 631, 632, 633, 640, 641, 642, 643, 651, 652, 653, 661, 662, 663, 671, 672, 673, 681, 682, 683, 691, 692, 693],
+//     "Motor Vehicle Theft": [700, 710, 711, 712, 720, 721, 722, 730, 731, 732],
+//     "Assault": [810, 861, 862, 863],
+//     "Arson": [900, 901, 903, 905, 911, 913, 915, 921, 922, 923, 925, 931, 933, 941, 942, 951, 961, 971, 972, 975, 981, 982],
+//     "Criminal Damage to Property": [1400, 1401, 1410, 1415, 1416, 1420, 1425, 1426, 1430, 1435, 1436],
+//     "Narcotics": [1800, 1810, 1811, 1812, 1813, 1814, 1815, 1820, 1822, 1823, 1824, 1825, 1830, 1835, 1840, 1841, 1842, 1843, 1844, 1845, 1850, 1855, 1860, 1865, 1870, 1880, 1885],
+//     "Weapons": [2619],
+//     "Death Investigation": [3100],
+//     "Proactive Policing": [9954, 9959, 9986]
+// };
+//new
+const neighborhoods = reactive([]);
+
+
+fetch('http://localhost:8000/neighborhoods', {
+  mode: 'no-cors'
+})
+  .then(response => {
+    // Access to response and headers is restricted due to 'no-cors' mode
+    // You won't be able to read response.json() or response.headers in this case
+    return response.json();
+    console.log('Request sent successfully, but limited access to response');
+  })
+  .catch(error => {
+    console.error('Error:', error);
+  });
+
+
+
+function apiURL() {
+    const baseUrl = 'http://localhost:8000/incidents';
+
+    const params = {
+        code: selectedIncidentTypes.map(type => incidentTypes[type]).join(','),
+        neighborhood: selectedNeighborhoods.join(','),
+        start_date: startDate.value,
+        end_date: endDate.value,
+        limit: maxIncidents.value,
+    };
+
+    // Filter out parameters with falsy values
+    const queryParams = Object.entries(params)
+        .filter(([key, value]) => value)
+        .map(([key, value]) => `${key}=${value}`)
+        .join('&');
+
+    console.log('Constructed Parameters:', params);
+    console.log('Query Parameters:', queryParams);
+
+    return `${baseUrl}${queryParams ? `?${queryParams}` : ''}`;
+}
+
 
 
 </script>
@@ -166,6 +251,7 @@ async function searchAndSetLocation() {
         <br />
         <button class="button" type="button" @click="closeDialog">OK</button>
     </dialog>
+
     <div class="grid-container ">
         <div class="grid-x grid-padding-x">
             <div id="leafletmap" class="cell auto"></div>
@@ -175,6 +261,21 @@ async function searchAndSetLocation() {
             <input v-model="searchLocation" @change="searchAndSetLocation" ref="locationInputRef" />
             <button class="button" @click="searchAndSetLocation">Go</button>
         </div>
+            <table v-if="crime_url.length > 0">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Neighborhood</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="item in crime_url">
+                    <td>{{ item.code }}</td>
+                    <td>{{ item.neighborhood }}</td>
+                    
+                </tr>
+            </tbody>
+        </table>
 
     </div>
 </template>
