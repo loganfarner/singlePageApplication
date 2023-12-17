@@ -12,6 +12,13 @@ const port = 8000;
 let app = express();
 app.use(express.json());
 
+app.use((req, res, next ) => {
+    res.header('Access-Control-Allow-Origin','*');
+    res.header('Access-Control-Allow-Methods', 'GET,POST, PUT, DELETE');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+    next();
+});
+
 /********************************************************************
 ***    DATABASE FUNCTIONS                                         *** 
 ********************************************************************/
@@ -58,7 +65,7 @@ function dbRun(query, params) {
 ********************************************************************/
 // GET request handler for crime codes
 app.get('/codes', (req, res) => {
-    console.log(req.query); // query object (key-value pairs after the ? in the url)
+    console.log('req.queary in app.get(/codes', req.query); // query object (key-value pairs after the ? in the url)
     let query = 'SELECT code, incident_type as type FROM Codes';
     if (req.query.code != undefined) {
         query = query + ' WHERE code IN ('+req.query.code+')';
@@ -75,7 +82,7 @@ app.get('/codes', (req, res) => {
 
 // GET request handler for neighborhoods
 app.get('/neighborhoods', (req, res) => {
-    console.log(req.query); // query object (key-value pairs after the ? in the url)
+    console.log('req.queary in app.get(/nieghborhoods', req.query); // query object (key-value pairs after the ? in the url)
     let query = 'SELECT neighborhood_number as id, neighborhood_name as name FROM Neighborhoods';
     if (req.query.id != undefined) {
         query = query + ' WHERE neighborhood_number IN ('+req.query.id+')';
@@ -94,7 +101,7 @@ app.get('/neighborhoods', (req, res) => {
 
 // GET request handler for crime incidents
 app.get('/incidents', (req, res) => {
-    console.log(req.query); // query object (key-value pairs after the ? in the url)
+    console.log('req.queary in app.get(/incidents', req.query); // query object (key-value pairs after the ? in the url)
     let query = 'SELECT case_number, strftime("%Y-%m-%d", date_time) as date, strftime("%H:%M:%S", date_time) as time, code, incident, police_grid, neighborhood_number, block FROM Incidents WHERE code > -100'; // adjust the limit as needed
 
     if (req.query.neighborhood != undefined) {
@@ -109,11 +116,11 @@ app.get('/incidents', (req, res) => {
     };
 
     if (req.query.start_date != undefined ) {
-        query = query + ' AND date_time > "'+req.query.start_date+'"';
+        query = query + ' AND date_time >= "'+req.query.start_date+'"';
     };
 
     if (req.query.end_date != undefined ) {
-        query = query + ' AND date_time < "'+req.query.end_date+'"';
+        query = query + ' AND date_time <= "'+req.query.end_date+'"';
     };
 
     if (req.query.limit != undefined) {
@@ -128,7 +135,7 @@ app.get('/incidents', (req, res) => {
         query = query.replace(' WHERE code > -100', '');
     }
 
-    //console.log(query);
+    console.log(query);
     dbSelect(query)
         .then((rows) => {
             res.status(200).type('json').json(rows);

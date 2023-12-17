@@ -1,7 +1,7 @@
 <script setup>
 import { reactive, ref, onMounted } from 'vue'
 
-let crime_url = ref('');
+let crime_url = ref('http://localhost:8000/');
 let dialog_err = ref(false);
 let searchLocation = ref('');
 let locationInputRef = ref(null);
@@ -78,7 +78,14 @@ onMounted(() => {
 function initializeCrimes() {
     // TODO: get code and neighborhood data
     //       get initial 1000 crimes
-    fetch(crime_url.value)
+    //let url = crime_url.value +"incidents?neighborhood=1";
+    let url = 'http://localhost:8000/incidents?neighborhood=1';
+    
+    let params = {
+        nieghborhood_number: 1
+    }
+
+    fetch(url)//,  {mode: 'no-cors'})//, params)
         .then((response) => {
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
@@ -200,18 +207,19 @@ let maxIncidents = ref('');
 const neighborhoods = reactive([]);
 
 
-fetch('http://localhost:8000/neighborhoods', {
-  mode: 'no-cors'
-})
-  .then(response => {
-    // Access to response and headers is restricted due to 'no-cors' mode
-    // You won't be able to read response.json() or response.headers in this case
-    return response.json();
-    console.log('Request sent successfully, but limited access to response');
-  })
-  .catch(error => {
-    console.error('Error:', error);
-  });
+// fetch('http://localhost:8000/neighborhoods', {
+//   mode: 'no-cors'
+// })
+//   .then(response => {
+//     // Access to response and headers is restricted due to 'no-cors' mode
+//     // You won't be able to read response.json() or response.headers in this case
+    
+//     console.log('Request sent successfully, but limited access to response');
+//     return response.json();
+//   })
+//   .catch(error => {
+//     console.error('Error:', error);
+//   });
 
 
 
