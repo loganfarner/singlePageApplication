@@ -3,7 +3,7 @@ import { reactive, ref, onMounted } from 'vue'
 
 const isNewIncidentDialogOpen = ref(false);
 
-let crime_url = ref('http://localhost:8000/');
+let crime_url = ref('');
 let dialog_err = ref(false);
 let searchLocation = ref('');
 let locationInputRef = ref(null);
@@ -111,7 +111,7 @@ function getNeighborhoodNumber(){
     let min_lon = map.leaflet.getBounds().getWest();
     let min_lat = map.leaflet.getBounds().getSouth();
     let max_lon = map.leaflet.getBounds().getEast();
-    console.log(map.leaflet.getBounds());
+    //console.log(map.leaflet.getBounds());
     let neighborhoodNumber = '';
     map.neighborhood_markers.forEach(neighborhood => {
         if(neighborhood.location[0] < max_lat && neighborhood.location[0] > min_lat && neighborhood.location[1] < max_lon && neighborhood.location[1] > min_lon){
@@ -129,7 +129,7 @@ function initializeCrimes() {
     // TODO: get code and neighborhood data
     //       get initial 1000 crimes
     //let url = crime_url.value +"incidents?neighborhood=1";
-    let url = 'http://localhost:8000/incidents?limit=5&';
+    let url = crime_url+'/incidents?';
     let neighborhoodNubmers = getNeighborhoodNumber();
     if (neighborhoodNubmers.length > 0){
         url = url + 'neighborhood='+neighborhoodNubmers+'&';
@@ -147,18 +147,9 @@ function initializeCrimes() {
         .then((data) => {
             // Assuming the response is an array of crimes
             console.log('Data received:', data);
-
             crimes.splice(0, crimes.length, ...data);
-            console.log('crimes length before push: '+crimes.length)
-            //crimes.splice(0, crimes.lengh);
-            let count = 0;
-            console.log('data length= '+ data.length);
-            data.forEach(crime => {
-                crimes.push(crime);
-                count++;
-                console.log(count);
-            });
-            console.log(crimes.length);
+            crimes.push(data);
+            return true;
         })
         .catch((error) => {
             console.error('Error fetching data:', error.message);
@@ -166,6 +157,8 @@ function initializeCrimes() {
             if (error.name === 'AbortError') {
                 console.error('The fetch operation was aborted.');
             }
+            //document.getElementById('rest-dialog')
+            return false;
         });
 }
 
@@ -173,13 +166,12 @@ function initializeCrimes() {
 function closeDialog() {
     let dialog = document.getElementById('rest-dialog');
     let url_input = document.getElementById('dialog-url');
-    if (crime_url.value !== '' && url_input.checkValidity()) {
-        dialog_err.value = false;
+    if (url_input.value !== '' && url_input.checkValidity()) {
+        //dialog_err.value = false;
         dialog.close();
+        crime_url = url_input.value;
         initializeCrimes();
-        console.log('closeDialog Called');
-    }
-    else {
+    } else {
         dialog_err.value = true;
     }
 }
@@ -422,6 +414,17 @@ let incident_type = {
         <br />
         <button class="button" type="button" @click="closeDialog">OK</button>
     </dialog>
+
+    <div class="container">
+    <b-row>
+      <b-col>
+        <b-card title="Welcome to Vue.js with Bootstrap">
+          <p>This is a sample component demonstrating how to integrate Bootstrap with Vue.js.</p>
+          <b-button variant="primary">Click me</b-button>
+        </b-card>
+      </b-col>
+    </b-row>
+  </div>
 
     <div class="grid-container ">
         <div class="grid-x grid-padding-x">
