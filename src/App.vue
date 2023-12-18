@@ -21,8 +21,8 @@ let map = reactive(
             se: { lat: 44.883658, lng: -92.993787 }
         },
         neighborhood_markers: [
-            { location: [44.942068, -93.020521], marker: "1" },
-            { location: [44.977413, -93.025156], marker: 2 },
+            { location: [44.942068, -93.020521], marker: null },
+            { location: [44.977413, -93.025156], marker: null },
             { location: [44.931244, -93.079578], marker: null },
             { location: [44.956192, -93.060189], marker: null },
             { location: [44.978883, -93.068163], marker: null },
@@ -70,14 +70,33 @@ onMounted(() => {
         .catch((error) => {
             console.log('Error:', error);
         });
+        
+        map.neighborhood_markers.forEach((neighborhood) => {
+        const marker = L.marker(neighborhood.location).addTo(map.leaflet);
+
+        marker.on('click', () => {
+            const neighborhoodNumber = map.neighborhood_markers.findIndex(
+                (markerLocation) =>
+                    markerLocation.location[0] === neighborhood.location[0] &&
+                    markerLocation.location[1] === neighborhood.location[1]
+            );
+
+            const totalCrimes = calculateTotalCrimes(neighborhoodNumber + 1); // Assuming neighborhood_number starts from 1
+
+            const content = `<p>Neighborhood: ${neighborhood_names[neighborhoodNumber + 1]}</p>` +
+                            `<p>Total Crimes: ${totalCrimes}</p>`;
+
+            L.popup()
+                .setLatLng(marker.getLatLng())
+                .setContent(content)
+                .openOn(map.leaflet);
+        });
+    });
 });
 
-function getNeighborhoodMarker(){
-    let location = 
-    map.neighborhood_markers.forEach(neighborhood => {
-        if(neighborhood.location){}
-    })
-    map.center.lat
+function calculateTotalCrimes(neighborhoodNumber) {
+    // Assuming crimes data is available and has a neighborhood_number property
+    return crimes.filter((crime) => crime.neighborhood_number === neighborhoodNumber).length;
 }
 
 // FUNCTIONS
@@ -202,22 +221,7 @@ let startDate = ref('');
 let endDate = ref('');
 let maxIncidents = ref('');
 
-// const incidentTypes = {
-//     "Homicide": [100, 110, 120],
-//     "Robbery": [300, 311, 312, 313, 314, 321, 322, 323, 324, 331, 332, 333, 334, 341, 342, 343, 344, 351, 352, 353, 354, 361, 362, 363, 364, 371, 372, 373, 374],
-//     "Aggravated Assault": [400, 410, 411, 412, 420, 421, 422, 430, 431, 432, 440, 441, 442, 450, 451, 452, 453],
-//     "Burglary": [500, 510, 511, 513, 515, 516, 520, 521, 523, 525, 526, 530, 531, 533, 535, 536, 540, 541, 543, 545, 546, 550, 551, 553, 555, 556, 560, 561, 563, 565, 566],
-//     "Theft": [600, 601, 603, 611, 612, 613, 614, 621, 622, 623, 630, 631, 632, 633, 640, 641, 642, 643, 651, 652, 653, 661, 662, 663, 671, 672, 673, 681, 682, 683, 691, 692, 693],
-//     "Motor Vehicle Theft": [700, 710, 711, 712, 720, 721, 722, 730, 731, 732],
-//     "Assault": [810, 861, 862, 863],
-//     "Arson": [900, 901, 903, 905, 911, 913, 915, 921, 922, 923, 925, 931, 933, 941, 942, 951, 961, 971, 972, 975, 981, 982],
-//     "Criminal Damage to Property": [1400, 1401, 1410, 1415, 1416, 1420, 1425, 1426, 1430, 1435, 1436],
-//     "Narcotics": [1800, 1810, 1811, 1812, 1813, 1814, 1815, 1820, 1822, 1823, 1824, 1825, 1830, 1835, 1840, 1841, 1842, 1843, 1844, 1845, 1850, 1855, 1860, 1865, 1870, 1880, 1885],
-//     "Weapons": [2619],
-//     "Death Investigation": [3100],
-//     "Proactive Policing": [9954, 9959, 9986]
-// };
-//new
+
 const neighborhoods = reactive([]);
 
 
