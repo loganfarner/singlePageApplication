@@ -129,7 +129,7 @@ function initializeCrimes() {
     // TODO: get code and neighborhood data
     //       get initial 1000 crimes
     //let url = crime_url.value +"incidents?neighborhood=1";
-    let url = 'http://localhost:8000/incidents?';//limit=1&';
+    let url = 'http://localhost:8000/incidents?limit=5&';
     let neighborhoodNubmers = getNeighborhoodNumber();
     if (neighborhoodNubmers.length > 0){
         url = url + 'neighborhood='+neighborhoodNubmers+'&';
@@ -149,11 +149,16 @@ function initializeCrimes() {
             console.log('Data received:', data);
 
             crimes.splice(0, crimes.length, ...data);
+            console.log('crimes length before push: '+crimes.length)
             //crimes.splice(0, crimes.lengh);
+            let count = 0;
+            console.log('data length= '+ data.length);
             data.forEach(crime => {
                 crimes.push(crime);
+                count++;
+                console.log(count);
             });
-
+            console.log(crimes.length);
         })
         .catch((error) => {
             console.error('Error fetching data:', error.message);
