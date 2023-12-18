@@ -21,23 +21,23 @@ let map = reactive(
             se: { lat: 44.883658, lng: -92.993787 }
         },
         neighborhood_markers: [
-            { location: [44.942068, -93.020521], marker: null },
-            { location: [44.977413, -93.025156], marker: null },
-            { location: [44.931244, -93.079578], marker: null },
-            { location: [44.956192, -93.060189], marker: null },
-            { location: [44.978883, -93.068163], marker: null },
-            { location: [44.975766, -93.113887], marker: null },
-            { location: [44.959639, -93.121271], marker: null },
-            { location: [44.947700, -93.128505], marker: null },
-            { location: [44.930276, -93.119911], marker: null },
-            { location: [44.982752, -93.147910], marker: null },
-            { location: [44.963631, -93.167548], marker: null },
-            { location: [44.973971, -93.197965], marker: null },
-            { location: [44.949043, -93.178261], marker: null },
-            { location: [44.934848, -93.176736], marker: null },
-            { location: [44.913106, -93.170779], marker: null },
-            { location: [44.937705, -93.136997], marker: null },
-            { location: [44.949203, -93.093739], marker: null }
+            { location: [44.942068, -93.020521], marker:'null', number: '1' , name: 'Conway/Battlecreek/Highwood'}, 
+            { location: [44.977413, -93.025156], marker:'null', number: '2' , name: 'Greater East Side'}, 
+            { location: [44.931244, -93.079578], marker:'null', number: '3' , name: 'West Side'}, 
+            { location: [44.956192, -93.060189], marker:'null', number: '4' , name: 'Daytons Bluff'}, 
+            { location: [44.978883, -93.068163], marker:'null', number: '5' , name: 'Payne/Phalen'}, 
+            { location: [44.975766, -93.113887], marker:'null', number: '6' , name: 'North End'},
+            { location: [44.959639, -93.121271], marker:'null', number: '7' , name: 'Thomas/Dale(Frogtown)'},
+            { location: [44.947700, -93.128505], marker:'null', number: '8' , name: 'Summit/University'},
+            { location: [44.930276, -93.119911], marker:'null', number: '9' , name: 'West Seventh'},
+            { location: [44.982752, -93.147910], marker:'null', number: '10', name: 'Como'},
+            { location: [44.963631, -93.167548], marker:'null', number: '11', name: 'Hamline/Midway'},
+            { location: [44.973971, -93.197965], marker:'null', number: '12', name: 'St. Anthony'},
+            { location: [44.949043, -93.178261], marker:'null', number: '13', name: 'Union Park'},
+            { location: [44.934848, -93.176736], marker:'null', number: '14', name: 'Macalester-Groveland'},
+            { location: [44.913106, -93.170779], marker:'null', number: '15', name: 'Highland'},
+            { location: [44.937705, -93.136997], marker:'null', number: '16', name: 'Summit Hill'},
+            { location: [44.949203, -93.093739], marker:'null', number: '17', name: 'Capitol River'}
         ]
     }
 );
@@ -63,8 +63,11 @@ onMounted(() => {
             return response.json();
         })
         .then((result) => {
+            console.log(result);
             result.features.forEach((value) => {
                 district_boundary.addData(value);
+                //console.log(district_boundary.addData(value));
+                console.log(value);
             });
         })
         .catch((error) => {
@@ -99,14 +102,48 @@ function calculateTotalCrimes(neighborhoodNumber) {
     return crimes.filter((crime) => crime.neighborhood_number === neighborhoodNumber).length;
 }
 
+function getNeighborhoodNumber(){
+    let location = [map.center.lat, map.center.lng];
+    console.log('location: '+ location[0] + ',' + location[1]);
+    let max_lat = map.leaflet.getBounds().getNorth();
+            //console.log('max_lat: '+map.leaflet.getBounds()._northEast.lat);
+    let min_lon = map.leaflet.getBounds().getWest();
+            //console.log('min_lon: '+ map.bounds.nw.lng);
+    let min_lat = map.leaflet.getBounds().getSouth();
+            //console.log('min_lat: '+ map.bounds.se.lat);
+    let max_lon = map.leaflet.getBounds().getEast();
+            //console.log('max_lon: '+map.bounds.se.lng);
+    console.log(map.leaflet.getBounds());
+    let neighborhoodNumber = '';
+    map.neighborhood_markers.forEach(neighborhood => {
+        if(neighborhood.location[0] < max_lat && neighborhood.location[0] > min_lat && neighborhood.location[1] < max_lon && neighborhood.location[1] > min_lon){
+            console.log(neighborhood.name);
+            neighborhoodNumber += neighborhood.number;
+        } else {
+            // console.log('False for ' + neighborhood.name);
+            // console.log(neighborhood.location[0] < max_lat && neighborhood.location[0] > min_lat && neighborhood.location[1] < max_lon && neighborhood.location[1] > min_lon);
+            // console.log(neighborhood.location[0] +'<'+ max_lat + ' is ' ); 
+            // console.log(neighborhood.location[0] < max_lat);
+            // console.log(neighborhood.location[0] +'>'+ min_lat + " is " ); 
+            // console.log(neighborhood.location[0] > min_lat);
+            // console.log(neighborhood.location[1] +'<'+ max_lon + " is " ); 
+            // console.log(neighborhood.location[1] < max_lon);
+            // console.log(neighborhood.location[1] +'>'+ min_lon + " is " ); 
+            // console.log(neighborhood.location[1] > min_lon);
+
+        }
+    })
+    
+}
+
 // FUNCTIONS
 // Function called once user has entered REST API URL
 function initializeCrimes() {
     // TODO: get code and neighborhood data
     //       get initial 1000 crimes
     //let url = crime_url.value +"incidents?neighborhood=1";
-    let url = 'http://localhost:8000/incidents?neighborhood=1';
-    
+    let url = 'http://localhost:8000/incidents?neighborhood=1,2';
+    getNeighborhoodNumber();
     let params = {
         nieghborhood_number: 1
     }
@@ -168,6 +205,7 @@ async function updateInput() {
         const address = data.display_name;
 
         searchLocation.value = address;
+        initializeCrimes();
     } catch (error) {
         console.error('Error fetching address:', error);
     }
@@ -330,7 +368,7 @@ let incident_type = {
                 <tr>
                     <th>Code</th>
                     <th>Neighborhood</th>
-                    <th>Incident</th>
+                    <th>Code Description</th>
                     <th>Date</th>
                     <th>Time</th>
                 </tr>
