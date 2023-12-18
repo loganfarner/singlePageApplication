@@ -1,6 +1,8 @@
 <script setup>
 import { reactive, ref, onMounted } from 'vue'
 
+const isNewIncidentDialogOpen = ref(false);
+
 let crime_url = ref('http://localhost:8000/');
 let dialog_err = ref(false);
 let searchLocation = ref('');
@@ -302,6 +304,21 @@ function apiURL() {
     return `${baseUrl}${queryParams ? `?${queryParams}` : ''}`;
 }
 
+function openNewIncidentDialog() {
+  const dialog = document.getElementById('new-incident-dialog');
+  if (dialog) {
+    dialog.showModal();
+  }
+}
+
+// Function to close the new incident dialog
+function closeNewIncidentDialog() {
+  const dialog = document.getElementById('new-incident-dialog');
+  if (dialog) {
+    dialog.close();
+  }
+}
+
 let neighborhood_names = {
     1: 'Conway/Battlecreek/Highwood',
     2: 'Greater East Side',
@@ -340,11 +357,72 @@ let incident_type = {
      
 }
 
-
-
 </script>
 
 <template>
+    <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    </head>
+    <body>
+
+    <div class="topnav">
+        <a @click="openNewIncidentDialog">New Incident</a>
+        <a href="App.vue">Home</a>
+        <a href="">About</a>
+    
+    </div>
+
+    <div style="padding-left:16px">
+    <h2 style="text-align: center;">Saint Paul Crime Tracker</h2>
+    </div>
+
+    <!-- New Incident Form -->
+    <form>
+        <dialog id="new-incident-dialog">
+            <h2>New Incident Form</h2>
+            <ol>
+            <li>
+                <label for="case-number">Case Number:</label>
+                <input type="text" id="case-number" />
+            </li>
+            <li>
+                <label for="date">Date:</label>
+                <input type="date" id="date" />
+            </li>
+            <li>
+                <label for="time">Time:</label>
+                <input type="time" id="time" />
+            </li>
+            <li>
+                <label for="code">Code</label>
+                <input type="number" id="code"/>
+            </li>
+            <li>
+                <label for="incident">Incident</label>
+                <input type="text" id="incident"/>
+            </li>
+            <li>
+                <label for="police_grid">Police Grid</label>
+                <input type="number" id="police_grid">
+            </li>
+            <li>
+                <label for="neighborhood_number">Neighborhood Number</label>
+                <input type="number" id="neighborhood_number">
+            </li>
+            <li>
+                <label for="block">Block</label>
+                <input type="text" id="block">
+            </li>
+            </ol>
+
+            <!-- Submit button or additional controls -->
+            <button @click="submitNewIncident">Submit</button>
+            <button @click="closeNewIncidentDialog">Close</button>
+        </dialog>
+    </form>
+
+    </body>
+
     <dialog id="rest-dialog" open>
         <h1 class="dialog-header">St. Paul Crime REST API</h1>
         <label class="dialog-label">URL: </label>
@@ -384,11 +462,18 @@ let incident_type = {
                 </tr>
             </tbody>
         </table>
-
-    </div>
+   </div>
 </template>
   
 <style>
+
+#new-incident-dialog {
+  width: 800px; /* Adjust the width as needed */
+  background-color: #f1f1f1;
+  max-width: 100%; /* Ensure it doesn't exceed the screen width */
+  margin: auto; /* Center the form horizontally */
+}
+
 #rest-dialog {
     width: 20rem;
     margin-top: 1rem;
@@ -417,4 +502,33 @@ let incident_type = {
     font-size: 1rem;
     color: #D32323;
 }
+body {
+    margin: 0;
+    background-color: #f1f1f1;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.topnav {
+    overflow: hidden;
+    background-color: royalblue;
+}
+
+.topnav a {
+    float: left;
+    color: #f2f2f2;
+    text-align: center;
+    padding: 24px 10rem;
+    text-decoration: none;
+    font-size: 24px;
+}
+
+.topnav a:hover {
+    background-color: #ddd;
+    color: black;
+}
+
+.topnav a.active {
+    color: white;
+}
+
 </style>
