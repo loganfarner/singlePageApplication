@@ -69,7 +69,7 @@ onMounted(() => {
             result.features.forEach((value) => {
                 district_boundary.addData(value);
                 //console.log(district_boundary.addData(value));
-                console.log(value);
+                //console.log(value);
             });
         })
         .catch((error) => {
@@ -106,36 +106,21 @@ function calculateTotalCrimes(neighborhoodNumber) {
 
 function getNeighborhoodNumber(){
     let location = [map.center.lat, map.center.lng];
-    console.log('location: '+ location[0] + ',' + location[1]);
+    //console.log('location: '+ location[0] + ',' + location[1]);
     let max_lat = map.leaflet.getBounds().getNorth();
-            //console.log('max_lat: '+map.leaflet.getBounds()._northEast.lat);
     let min_lon = map.leaflet.getBounds().getWest();
-            //console.log('min_lon: '+ map.bounds.nw.lng);
     let min_lat = map.leaflet.getBounds().getSouth();
-            //console.log('min_lat: '+ map.bounds.se.lat);
     let max_lon = map.leaflet.getBounds().getEast();
-            //console.log('max_lon: '+map.bounds.se.lng);
     console.log(map.leaflet.getBounds());
     let neighborhoodNumber = '';
     map.neighborhood_markers.forEach(neighborhood => {
         if(neighborhood.location[0] < max_lat && neighborhood.location[0] > min_lat && neighborhood.location[1] < max_lon && neighborhood.location[1] > min_lon){
-            console.log(neighborhood.name);
-            neighborhoodNumber += neighborhood.number;
-        } else {
-            // console.log('False for ' + neighborhood.name);
-            // console.log(neighborhood.location[0] < max_lat && neighborhood.location[0] > min_lat && neighborhood.location[1] < max_lon && neighborhood.location[1] > min_lon);
-            // console.log(neighborhood.location[0] +'<'+ max_lat + ' is ' ); 
-            // console.log(neighborhood.location[0] < max_lat);
-            // console.log(neighborhood.location[0] +'>'+ min_lat + " is " ); 
-            // console.log(neighborhood.location[0] > min_lat);
-            // console.log(neighborhood.location[1] +'<'+ max_lon + " is " ); 
-            // console.log(neighborhood.location[1] < max_lon);
-            // console.log(neighborhood.location[1] +'>'+ min_lon + " is " ); 
-            // console.log(neighborhood.location[1] > min_lon);
-
-        }
+            //console.log(neighborhood.name +' number:'+neighborhood.number);
+            neighborhoodNumber = neighborhoodNumber+',' + neighborhood.number;
+        }         
     })
-    
+    //console.log(neighborhoodNumber);
+    return neighborhoodNumber.slice(1, neighborhoodNumber.length);
 }
 
 // FUNCTIONS
@@ -144,12 +129,13 @@ function initializeCrimes() {
     // TODO: get code and neighborhood data
     //       get initial 1000 crimes
     //let url = crime_url.value +"incidents?neighborhood=1";
-    let url = 'http://localhost:8000/incidents?neighborhood=1,2';
-    getNeighborhoodNumber();
-    let params = {
-        nieghborhood_number: 1
+    let url = 'http://localhost:8000/incidents?';//limit=1&';
+    let neighborhoodNubmers = getNeighborhoodNumber();
+    if (neighborhoodNubmers.length > 0){
+        url = url + 'neighborhood='+neighborhoodNubmers+'&';
     }
 
+    console.log(url);
 
     fetch(url)//,  {mode: 'no-cors'})//, params)
         .then((response) => {
@@ -162,8 +148,8 @@ function initializeCrimes() {
             // Assuming the response is an array of crimes
             console.log('Data received:', data);
 
-            //crimes.splice(0, crimes.length, ...data);
-            crimes.splice(0, crimes.lengh);
+            crimes.splice(0, crimes.length, ...data);
+            //crimes.splice(0, crimes.lengh);
             data.forEach(crime => {
                 crimes.push(crime);
             });
@@ -186,6 +172,7 @@ function closeDialog() {
         dialog_err.value = false;
         dialog.close();
         initializeCrimes();
+        console.log('closeDialog Called');
     }
     else {
         dialog_err.value = true;
@@ -207,6 +194,7 @@ async function updateInput() {
         const address = data.display_name;
 
         searchLocation.value = address;
+        console.log('updateInput called');
         initializeCrimes();
     } catch (error) {
         console.error('Error fetching address:', error);
@@ -354,7 +342,6 @@ let incident_type = {
     26: 'Discharging in a Public Area',
     31: 'Death Investigation',
     99: 'Proactive Police Visit'
-     
 }
 
 </script>
