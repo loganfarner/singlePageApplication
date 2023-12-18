@@ -291,15 +291,44 @@ function apiURL() {
 }
 
 let neighborhood_names = {
-    1: 'battle',
-    2: '#2',
-    3: '#3',
+    1: 'Conway/Battlecreek/Highwood',
+    2: 'Greater East Side',
+    3: 'West Side',
+    4: 'Daytons Bluff',
+    5: 'Payne/Phalen',
+    6: 'North End',
+    7: 'Thomas/Dale(Frogtown)',
+    8: 'Summit/University',
+    9: 'West Seventh',
+    10: 'Como',
+    11: 'Hamline/Midway',
+    12: 'St. Anthony',
+    13: 'Union Park',
+    14: 'Macalester-Groveland',
+    15: 'Highland',
+    16: 'Summit Hill',
+    17: 'Capitol River'
 }
 
-let code_description = {
-    14: 'Criminal Damage to Property',
+let incident_type = {
+    1: 'Murder',
+    2: 'Rape',
+    3: 'Robbery',
+    4: 'Aggrevated Assault',
+    5: 'Burglary',
+    6: 'Theft',
+    7: 'Motor Vehicle Theft',
+    8: 'Assault',
+    9: 'Arson',
+    14: 'Criminal Damage of Property',
+    18: 'Narcotics',
+    26: 'Discharging in a Public Area',
+    31: 'Death Investigation',
     99: 'Proactive Police Visit'
+     
 }
+
+
 
 </script>
 
@@ -337,8 +366,7 @@ let code_description = {
                 <tr v-for="item in crimes">
                     <td>{{ item.code }}</td>
                     <td>{{ neighborhood_names[item.neighborhood_number] }}</td>
-                    <td>{{ code_description[Math.floor(item.code/100)] }}</td>
-                    <td>{{ item.incident }}</td>
+                    <td>{{ incident_type[Math.floor(item.code/100)] }}</td>
                     <td>{{ item.date }}</td>
                     <td>{{ item.time }}</td>
                     
