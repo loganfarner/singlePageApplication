@@ -368,8 +368,7 @@ let incident_type = {
     <div class="topnav">
         <a @click="openNewIncidentDialog">New Incident</a>
         <a href="App.vue">Home</a>
-        <a href="">About</a>
-    
+        <a href="../aboutTheProject.html">About</a>
     </div>
 
     <div style="padding-left:16px">
