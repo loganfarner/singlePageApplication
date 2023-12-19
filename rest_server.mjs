@@ -151,7 +151,7 @@ app.put('/new-incident', (req, res) => {
     console.log(req.body); // uploaded data
     const {case_number, date, time, code, incident, police_grid, neighborhood_number, block} = req.body;
  
-    const incidentData = [case_number, date, time, code, incident, police_grid, neighborhood_number,block];
+    const incidentData = [case_number, date + 'T' + time, code, incident, police_grid, neighborhood_number, block];
 
     db.get("SELECT COUNT(*) AS count FROM Incidents WHERE case_number=?", [case_number], (err, { count }) => {
         if (err) {
@@ -159,7 +159,7 @@ app.put('/new-incident', (req, res) => {
             res.status(500).send('Internal Server Error');
         } else {
             if (count === 0) {
-                db.run("INSERT INTO Incidents (case_number, date + 'T' + time, code, incident, police_grid, neighborhood_number, block) VALUES (?, ?, ?, ?, ?, ?, ?)", incidentData, (err) => {
+                db.run("INSERT INTO Incidents (case_number, date_time, code, incident, police_grid, neighborhood_number, block) VALUES (?, ?, ?, ?, ?, ?, ?)", incidentData, (err) => {
                     if (err) {
                         console.log("Error entering incident: " + err);
                         res.status(500).send('Internal Server Error');

@@ -344,21 +344,6 @@ function apiURL() {
     return `${baseUrl}${queryParams ? `?${queryParams}` : ''}`;
 }
 
-function openNewIncidentDialog() {
-  const dialog = document.getElementById('new-incident-dialog');
-  if (dialog) {
-    dialog.showModal();
-  }
-}
-
-// Function to close the new incident dialog
-function closeNewIncidentDialog() {
-  const dialog = document.getElementById('new-incident-dialog');
-  if (dialog) {
-    dialog.close();
-  }
-}
-
 let neighborhood_names = {
     1: 'Conway/Battlecreek/Highwood',
     2: 'Greater East Side',
@@ -396,7 +381,78 @@ let incident_type = {
     99: 'Proactive Police Visit'
 }
 
+function submitNewIncident() {
+    const caseNumber = document.getElementById('case-number').value;
+    const date = document.getElementById('date').value;
+    const time = document.getElementById('time').value;
+    const code = document.getElementById('code').value;
+    const incidentType = document.getElementById('incident').value;
+    const policeGrid = document.getElementById('police_grid').value;
+    const neighborhoodNumber = document.getElementById('neighborhood_number').value;
+    const block = document.getElementById('block').value;
 
+    
+
+    // Ensure time is in the format 'HH:mm'
+    const formattedTime = `${time}:00`;
+
+    const newIncidentData = {
+        caseNumber,
+        date,
+        time: formattedTime,
+        code,
+        incidentType,
+        policeGrid,
+        neighborhoodNumber,
+        block,
+    };
+
+    console.log('Sending data:', newIncidentData);
+
+    fetch('http://localhost:8000/new-incident', {
+        method: 'PUT',
+        mode: 'cors',
+        cache: 'no-cache',
+        credentials: 'same-origin',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newIncidentData),
+    })
+    .then((response) => {
+        console.log('Response status:', response.status);
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        return response.json();
+    })
+    .then((data) => {
+        console.log('Success:', data);
+        // You can update your local data or perform any other actions here
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+}
+
+
+
+function openNewIncidentDialog() {
+  const dialog = document.getElementById('new-incident-dialog');
+  if (dialog) {
+    dialog.showModal();
+  }
+}
+
+// Function to close the new incident dialog
+function closeNewIncidentDialog() {
+  const dialog = document.getElementById('new-incident-dialog');
+  if (dialog) {
+    dialog.close();
+  }
+}
 
 </script>
 
@@ -455,9 +511,8 @@ let incident_type = {
             </li>
             </ol>
 
-            <!-- Submit button or additional controls -->
-            <button @click="submitNewIncident">Submit</button>
-            <button @click="closeNewIncidentDialog">Close</button>
+            <button class="button" type="button" @click="submitNewIncident">Submit</button>
+            <!-- <button type="button" @click="closeNewIncidentDialog">Close</button> -->
         </dialog>
     </form>
 
@@ -498,7 +553,7 @@ let incident_type = {
                 </li>
         </div>
         <div style="float:left;padding: 1rem;">
-            <lable id="inputs">Start Date: </lable>
+            <label id="inputs">Start Date: </label>
             <input type="date" id="start" class="entryField">
             <label id="inputs">End Date: </label>
             <input type="date" id="end" class="entryField">
@@ -517,6 +572,7 @@ let incident_type = {
                         <th>Incident Type</th>
                         <th>Date</th>
                         <th>Time</th>
+                        <th>Block</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -526,6 +582,7 @@ let incident_type = {
                         <td>{{ incident_type[Math.floor(item.code/100)] }}</td>
                         <td>{{ item.date }}</td>
                         <td>{{ item.time }}</td>
+                        <td>{{ item.block }}</td>
                         
                     </tr>
                 </tbody>
