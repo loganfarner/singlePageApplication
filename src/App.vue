@@ -355,25 +355,25 @@ let rowColor = {
 
 //++++ NEW INCIDENT POPUP LOGIC ++++//
 function submitNewIncident() {
-    const caseNumber = document.getElementById('case-number').value;
+    const case_number = document.getElementById('case-number').value;
     const date = document.getElementById('date').value;
     const time = document.getElementById('time').value;
     const code = document.getElementById('code').value;
-    const incidentType = document.getElementById('incident').value;
-    const policeGrid = document.getElementById('police_grid').value;
-    const neighborhoodNumber = document.getElementById('neighborhood_number').value;
+    const incident = document.getElementById('incident').value;
+    const police_grid = document.getElementById('police_grid').value;
+    const neighborhood_number = document.getElementById('neighborhood_number').value;
     const block = document.getElementById('block').value;
 
     const formattedTime = `${time}:00`;
 
     const newIncidentData = {
-        caseNumber,
+        case_number,
         date,
         time: formattedTime,
         code,
-        incidentType,
-        policeGrid,
-        neighborhoodNumber,
+        incident,
+        police_grid,
+        neighborhood_number,
         block,
     };
 
