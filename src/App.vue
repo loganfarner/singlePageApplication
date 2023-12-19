@@ -336,6 +336,22 @@ let incident_type = {
     31: 'Death Investigation',
     99: 'Proactive Police Visit'
 }
+let rowColor = {
+    1: '#ff928b',
+    2: '#ff928b',
+    3: '#ffac81',
+    4: '#ff928b',
+    5: '#ffac81',
+    6: '#ffac81',
+    7: '#ffac81',
+    8: '#ff928b',
+    9: '#ffac81',
+    14: '#ffac81',
+    18: '#efe9ae',
+    26: '#efe9ae',
+    31: '#efe9ae',
+    99: '#efe9ae'
+}
 
 //++++ NEW INCIDENT POPUP LOGIC ++++//
 function submitNewIncident() {
@@ -547,6 +563,12 @@ async function deleteCrime(crime) {
         </div>
 
         <div>
+            <div id="rowKey">
+                <p>Table Row Color Key</p>
+                <p style="background-color: #ff928b;">Violent Crimes</p>
+                <p style="background-color: #ffac81;">Property Crimes</p>
+                <p style="background-color: #efe9ae;">Other Crimes</p>
+            </div>
             <table v-if="crimes.length > 0">
                 <thead>
                     <tr>
@@ -560,7 +582,7 @@ async function deleteCrime(crime) {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="item in crimes">
+                    <tr v-for="item in crimes" :style="{backgroundColor: rowColor[Math.floor(item.code/100)]}">
                         <td>{{ item.code }}</td>
                         <td>{{ neighborhood_names[item.neighborhood_number] }}</td>
                         <td>{{ incident_type[Math.floor(item.code/100)] }}</td>
@@ -577,6 +599,17 @@ async function deleteCrime(crime) {
 </template>
   
 <style>
+#rowKey, p {
+    clear: both; 
+    margin:0;
+    width: 11rem;
+    text-align: center;
+    font-weight: bold;
+    outline: auto;
+}
+#rowKey {
+    margin-bottom: 1rem;
+}
 
 tbody td{
     margin: 0rem;
