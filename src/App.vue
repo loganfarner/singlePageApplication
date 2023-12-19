@@ -51,7 +51,7 @@ onMounted(() => {
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         minZoom: 11,
-        maxZoom: 18
+        maxZoom: 15
     }).addTo(map.leaflet);
     map.leaflet.setMaxBounds([[44.883658, -93.217977], [45.008206, -92.993787]]);
     map.leaflet.on("dragend", updateInputFromMap);
@@ -112,14 +112,20 @@ function getNeighborhoodNumber(){
     let min_lat = map.leaflet.getBounds().getSouth();
     let max_lon = map.leaflet.getBounds().getEast();
     //console.log(map.leaflet.getBounds());
+    let count = 0;
     let neighborhoodNumber = '';
     map.neighborhood_markers.forEach(neighborhood => {
         if(neighborhood.location[0] < max_lat && neighborhood.location[0] > min_lat && neighborhood.location[1] < max_lon && neighborhood.location[1] > min_lon){
             //console.log(neighborhood.name +' number:'+neighborhood.number);
             neighborhoodNumber = neighborhoodNumber+',' + neighborhood.number;
+        } else {
+            count++;
         }         
     })
     //console.log(neighborhoodNumber);
+    if (count == 17){
+        return '-10';
+    }
     return neighborhoodNumber.slice(1, neighborhoodNumber.length);
 }
 
@@ -149,7 +155,7 @@ function initializeCrimes() {
     let neighborhoodNubmers = getNeighborhoodNumber();
     let neighborhood_checkboxes = document.getElementsByClassName("checkbox");
     for (let i = 0; i<neighborhood_checkboxes.length-1; i++){
-        console.log(neighborhood_checkboxes[i].checked);
+        //console.log(neighborhood_checkboxes[i].checked);
         if (neighborhood_checkboxes[i].checked == false){
             neighborhoodNubmers = neighborhoodNubmers.replace(i+1+",", "");
         }
@@ -157,7 +163,6 @@ function initializeCrimes() {
     if (neighborhood_checkboxes[16].checked == false){
             neighborhoodNubmers = neighborhoodNubmers.replace("17", "");
         }
-
     if (neighborhoodNubmers.length > 0){
         url = url + 'neighborhood='+neighborhoodNubmers+'&';
     }
@@ -202,7 +207,7 @@ function initializeCrimes() {
         })
         .then((data) => {
             // Assuming the response is an array of crimes
-            console.log('Data received:', data);
+            console.log('Data received:', data.length);
             crimes.splice(0, crimes.length, ...data);
             crimes.push(data);
             return true;
@@ -288,59 +293,11 @@ async function searchAndSetLocation() {
             map.center.lat = Math.min(map.bounds.nw.lat, Math.max(map.bounds.se.lat, lat));
             map.center.lng = Math.min(map.bounds.se.lng, Math.max(map.bounds.nw.lng, lng));
 
-            map.leaflet.setView([map.center.lat, map.center.lng], 16);
+            map.leaflet.setView([map.center.lat, map.center.lng], 15);
         }
     }catch (error) {
         console.error('Error fetching data:', error);
     }
-}
-
-let selectedIncidentTypes = reactive([]);
-let selectedNeighborhoods = reactive([]);
-let startDate = ref('');
-let endDate = ref('');
-let maxIncidents = ref('');
-
-
-const neighborhoods = reactive([]);
-
-
-// fetch('http://localhost:8000/neighborhoods', {
-//   mode: 'no-cors'
-// })
-//   .then(response => {
-//     // Access to response and headers is restricted due to 'no-cors' mode
-//     // You won't be able to read response.json() or response.headers in this case
-    
-//     console.log('Request sent successfully, but limited access to response');
-//     return response.json();
-//   })
-//   .catch(error => {
-//     console.error('Error:', error);
-//   });
-
-
-
-function apiURL() {
-    const baseUrl = 'http://localhost:8000/incidents';
-
-    const params = {
-        code: selectedIncidentTypes.map(type => incidentTypes[type]).join(','),
-        neighborhood: selectedNeighborhoods.join(','),
-        start_date: startDate.value,
-        end_date: endDate.value,
-        limit: maxIncidents.value,
-    };
-
-    const queryParams = Object.entries(params)
-        .filter(([key, value]) => value)
-        .map(([key, value]) => `${key}=${value}`)
-        .join('&');
-
-    console.log('Constructed Parameters:', params);
-    console.log('Query Parameters:', queryParams);
-
-    return `${baseUrl}${queryParams ? `?${queryParams}` : ''}`;
 }
 
 let neighborhood_names = {
@@ -536,13 +493,13 @@ async function deleteCrime(crime) {
                 <input type="text" id="block">
             </li>
             </ol>
-
+            <p class="dialog-error" v-if="dialog_err">Error: must enter all Fields</p>
             <button class="button" type="button" @click="submitNewIncident">Submit</button>
             <!-- <button type="button" @click="closeNewIncidentDialog">Close</button> -->
         </dialog>
     </form>
 
-    </body>
+    
 
     <dialog id="rest-dialog" open>
         <h1 class="dialog-header">St. Paul Crime REST API</h1>
@@ -559,12 +516,12 @@ async function deleteCrime(crime) {
             <div id="leafletmap" class="cell auto"></div>
         </div>
         <div class="grid-x grid-padding-x">
-            <label>Enter Location:</label>
-            <input v-model="searchLocation" @change="searchAndSetLocation" ref="locationInputRef" />
-            <button class="button" @click="searchAndSetLocation">Go</button>
+            <label style="margin-top: 1rem; font-weight: bold;">Enter Location:</label>
+            <input v-model="searchLocation" @change="searchAndSetLocation" ref="locationInputRef" style="height: 2rem; margin: 1rem; width: 65%;"/>
+            <button class="button" @click="searchAndSetLocation" style="margin-bottom: 0rem;">Go</button>
         </div>
         <br>
-        <div style="float: left;outline: auto;padding: 1rem;">
+        <div style="float: left;outline: auto;padding: 1rem;margin-bottom: 1rem;">
             <h6 style="text-align: center;">Select Neighborhoods to View</h6>                
                 <li v-for="(item,index) in neighborhood_names" style="list-style: none;">
                     <input  type="checkbox" class="checkbox" checked>
@@ -603,23 +560,28 @@ async function deleteCrime(crime) {
                     </tr>
                 </thead>
                 <tbody>
-
                     <tr v-for="item in crimes">
                         <td>{{ item.code }}</td>
                         <td>{{ neighborhood_names[item.neighborhood_number] }}</td>
                         <td>{{ incident_type[Math.floor(item.code/100)] }}</td>
-                        <td>{{ item.date }}</td>
+                        <td style="min-width: 7rem;">{{ item.date }}</td>
                         <td>{{ item.time }}</td>
                         <td>{{ item.block }}</td>
-                        <td><button class="button" type="button" @click="deleteCrime(item)">Delete</button></td>
+                        <td><button class="button" type="button" @click="deleteCrime(item)" style="margin-bottom: 0rem; padding: 0.625rem;">Delete</button></td>
                     </tr>
                 </tbody>
             </table>
         </div>
    </div>
+</body>
 </template>
   
 <style>
+
+tbody td{
+    margin: 0rem;
+    padding: 0rem 0.625rem;
+}
 
 .entryField{
     width: 9rem;
