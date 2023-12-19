@@ -65,7 +65,7 @@ onMounted(() => {
             return response.json();
         })
         .then((result) => {
-            console.log(result);
+            //console.log(result);
             result.features.forEach((value) => {
                 district_boundary.addData(value);
                 //console.log(district_boundary.addData(value));
@@ -105,7 +105,7 @@ function calculateTotalCrimes(neighborhoodNumber) {
 }
 
 function getNeighborhoodNumber(){
-    let location = [map.center.lat, map.center.lng];
+    //let location = [map.center.lat, map.center.lng];
     //console.log('location: '+ location[0] + ',' + location[1]);
     let max_lat = map.leaflet.getBounds().getNorth();
     let min_lon = map.leaflet.getBounds().getWest();
@@ -123,21 +123,77 @@ function getNeighborhoodNumber(){
     return neighborhoodNumber.slice(1, neighborhoodNumber.length);
 }
 
+let code_numbers = {
+    0: '100,110,120',
+    1: '210,220',
+    2: '300,311,312,313,314,321,322,323,324,331,332,333,334,341,342,343,344,351,352,353,354,361,362,363,364,371,372,373,374',
+    3: '400,410,411,412,420,421,422,430,431,432,440,441,442,450,451,452,453',
+    4: '500,510,511,513,515,516,520,521,523,525,526,530,531,533,535,536,540,541,543,545,546,550,551,553,555,556,560,561,563,565,566',
+    5: '600,601,603,611,612,613,614,621,622,623,630,631,632,633,640,641,642,643,651,652,653,661,662,663,671,672,673,681,682,683,691,692,693',
+    6: '700,710,711,712,720,721,722,730,731,732',
+    7: '810,861,862,863',
+    8: '900,901,903,905,911,913,915,921,922,923,925,931,933,941,942,951,961,971,972,975,981,982',
+    9: '1400,1401,1410,1415,1416,1420,1425,1426,1430,1435,1436',
+    10: '1800,1810,1811,1812,1813,1814,1815,1820,1822,1823,1824,1825,1830,1835,1840,1841,1842,1843,1844,1845,1850,1855,1860,1865,1870,1880,1885',
+    11: '2619',
+    12: '3100',
+    13: '9954,9959,9986'
+}
+
 // FUNCTIONS
 // Function called once user has entered REST API URL
 function initializeCrimes() {
     // TODO: get code and neighborhood data
     //       get initial 1000 crimes
-    //let url = crime_url.value +"incidents?neighborhood=1";
     let url = crime_url+'/incidents?';
     let neighborhoodNubmers = getNeighborhoodNumber();
+    let neighborhood_checkboxes = document.getElementsByClassName("checkbox");
+    for (let i = 0; i<neighborhood_checkboxes.length-1; i++){
+        console.log(neighborhood_checkboxes[i].checked);
+        if (neighborhood_checkboxes[i].checked == false){
+            neighborhoodNubmers = neighborhoodNubmers.replace(i+1+",", "");
+        }
+    }
+    if (neighborhood_checkboxes[16].checked == false){
+            neighborhoodNubmers = neighborhoodNubmers.replace("17", "");
+        }
+
     if (neighborhoodNubmers.length > 0){
         url = url + 'neighborhood='+neighborhoodNubmers+'&';
+    }
+    let codes = '';
+    let incident_checkboxes = document.getElementsByClassName("incident_checkbox");
+    for (let i = 0; i<incident_checkboxes.length; i++){
+        if (incident_checkboxes[i].checked == true){
+            codes = codes+code_numbers[i]+',';
+        }
+    } 
+    codes = codes.slice(0,codes.length-1);
+    if (codes.length > 0){
+        url = url + 'codes='+codes+'&'
+    }
+    let limit_input = document.getElementById("limit");
+    if (limit_input.value != 1000 ){
+        if(limit_input.value<1){
+            limit_input.value = 1;
+        } else if (limit_input.value > 2000){
+            limit_input.value = 2000;
+        }
+        url = url + 'limit='+limit_input.value+'&';
+    }
+
+    let start_date = document.getElementById("start").value;
+    if (start_date.length > 0){
+        url = url + 'start_date='+start_date+'&';
+    }
+    let end_date = document.getElementById("end").value;
+    if (end_date.length > 0){
+        url = url + 'end_date='+end_date;
     }
 
     console.log(url);
 
-    fetch(url)//,  {mode: 'no-cors'})//, params)
+    fetch(url)
         .then((response) => {
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
@@ -191,7 +247,6 @@ async function updateInput() {
         const address = data.display_name;
 
         searchLocation.value = address;
-        console.log('updateInput called');
         initializeCrimes();
     } catch (error) {
         console.error('Error fetching address:', error);
@@ -336,10 +391,12 @@ let incident_type = {
     9: 'Arson',
     14: 'Criminal Damage of Property',
     18: 'Narcotics',
-    26: 'Discharging in a Public Area',
+    26: 'Discharging Weapon in a Public Area',
     31: 'Death Investigation',
     99: 'Proactive Police Visit'
 }
+
+
 
 </script>
 
@@ -415,18 +472,8 @@ let incident_type = {
         <button class="button" type="button" @click="closeDialog">OK</button>
     </dialog>
 
-    <div class="container">
-    <b-row>
-      <b-col>
-        <b-card title="Welcome to Vue.js with Bootstrap">
-          <p>This is a sample component demonstrating how to integrate Bootstrap with Vue.js.</p>
-          <b-button variant="primary">Click me</b-button>
-        </b-card>
-      </b-col>
-    </b-row>
-  </div>
 
-    <div class="grid-container ">
+    <div class="grid-container">
         <div class="grid-x grid-padding-x">
             <div id="leafletmap" class="cell auto"></div>
         </div>
@@ -435,31 +482,65 @@ let incident_type = {
             <input v-model="searchLocation" @change="searchAndSetLocation" ref="locationInputRef" />
             <button class="button" @click="searchAndSetLocation">Go</button>
         </div>
-            <table v-if="crime_url.length > 0">
-            <thead>
-                <tr>
-                    <th>Code</th>
-                    <th>Neighborhood</th>
-                    <th>Code Description</th>
-                    <th>Date</th>
-                    <th>Time</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="item in crimes">
-                    <td>{{ item.code }}</td>
-                    <td>{{ neighborhood_names[item.neighborhood_number] }}</td>
-                    <td>{{ incident_type[Math.floor(item.code/100)] }}</td>
-                    <td>{{ item.date }}</td>
-                    <td>{{ item.time }}</td>
-                    
-                </tr>
-            </tbody>
-        </table>
+        <br>
+        <div style="float: left;outline: auto;padding: 1rem;">
+            <h6 style="text-align: center;">Select Neighborhoods to View</h6>                
+                <li v-for="(item,index) in neighborhood_names" style="list-style: none;">
+                    <input  type="checkbox" class="checkbox" checked>
+                    <label>{{ neighborhood_names[index] }}</label>                
+                </li>
+        </div>
+        <div style="float: left;outline: auto;padding: 1rem;">
+            <h6 style="text-align: center;">Select Incident Type to View</h6>                
+                <li v-for="(item,index) in incident_type" style="list-style: none;">
+                    <input  type="checkbox" class="incident_checkbox" checked>
+                    <label>{{ incident_type[index] }}</label>                
+                </li>
+        </div>
+        <div style="float:left;padding: 1rem;">
+            <lable id="inputs">Start Date: </lable>
+            <input type="date" id="start" class="entryField">
+            <label id="inputs">End Date: </label>
+            <input type="date" id="end" class="entryField">
+            <label id="inputs">Max Incidents: </label>
+            <p style="font-size: small;margin-bottom: 0rem;">Min: 1 & Max: 2000</p>
+            <input type="number" id="limit" class="entryField" defaultValue="1000">
+            <input type="submit" value="Submit" @click="initializeCrimes" style="background-color: #fff;font-weight: bold;padding: 1rem;"> 
+        </div>
+
+        <div>
+            <table v-if="crimes.length > 0">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Neighborhood</th>
+                        <th>Incident Type</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="item in crimes">
+                        <td>{{ item.code }}</td>
+                        <td>{{ neighborhood_names[item.neighborhood_number] }}</td>
+                        <td>{{ incident_type[Math.floor(item.code/100)] }}</td>
+                        <td>{{ item.date }}</td>
+                        <td>{{ item.time }}</td>
+                        
+                    </tr>
+                </tbody>
+            </table>
+        </div>
    </div>
 </template>
   
 <style>
+.entryField{
+    width: 9rem;
+}
+#inputs{
+    font-size: 1rem;
+}
 
 #new-incident-dialog {
   width: 800px; /* Adjust the width as needed */
