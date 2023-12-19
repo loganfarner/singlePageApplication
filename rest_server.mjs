@@ -194,7 +194,8 @@ app.delete('/remove-incident', (req, res) => {
                         res.status(500).send('There was an error');
                     }
                     else {
-                        res.status(200).send('You successfully deleted the incident');
+                        res.status(200).json({ success: true, message: 'Incident deleted successfully' });
+
                     }
                 });
             }

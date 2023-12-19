@@ -332,7 +332,6 @@ function apiURL() {
         limit: maxIncidents.value,
     };
 
-    // Filter out parameters with falsy values
     const queryParams = Object.entries(params)
         .filter(([key, value]) => value)
         .map(([key, value]) => `${key}=${value}`)
@@ -381,6 +380,7 @@ let incident_type = {
     99: 'Proactive Police Visit'
 }
 
+//++++ NEW INCIDENT POPUP LOGIC ++++//
 function submitNewIncident() {
     const caseNumber = document.getElementById('case-number').value;
     const date = document.getElementById('date').value;
@@ -391,9 +391,6 @@ function submitNewIncident() {
     const neighborhoodNumber = document.getElementById('neighborhood_number').value;
     const block = document.getElementById('block').value;
 
-    
-
-    // Ensure time is in the format 'HH:mm'
     const formattedTime = `${time}:00`;
 
     const newIncidentData = {
@@ -430,15 +427,13 @@ function submitNewIncident() {
     })
     .then((data) => {
         console.log('Success:', data);
-        // You can update your local data or perform any other actions here
     })
     .catch((error) => {
         console.error('Error:', error);
     });
 }
 
-
-
+// +++ MANAGES INCIDENT POPUP +++ //
 function openNewIncidentDialog() {
   const dialog = document.getElementById('new-incident-dialog');
   if (dialog) {
@@ -453,6 +448,37 @@ function closeNewIncidentDialog() {
     dialog.close();
   }
 }
+
+// ++++ DELETE LOGIC ++++ //
+async function deleteCrime(crime) {
+    const caseNumberToDelete = crime.case_number;
+
+    try {
+        const response = await fetch('http://localhost:8000/remove-incident', {
+            method: 'DELETE',
+            mode: 'cors',
+            cache: 'no-cache',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ case_number: caseNumberToDelete }), 
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to delete crime. Status: ${response.status}`);
+        }
+        const result = await response.text();
+        console.log('Delete success:', result);
+        const crimeIndex = crimes.indexOf(crime);
+        if (crimeIndex !== -1) {
+            crimes.splice(crimeIndex, 1);
+        }
+    } catch (error) {
+        console.error('Error deleting crime:', error);
+    }
+}
+
 
 </script>
 
@@ -573,9 +599,11 @@ function closeNewIncidentDialog() {
                         <th>Date</th>
                         <th>Time</th>
                         <th>Block</th>
+                        <th>Delete</th>
                     </tr>
                 </thead>
                 <tbody>
+
                     <tr v-for="item in crimes">
                         <td>{{ item.code }}</td>
                         <td>{{ neighborhood_names[item.neighborhood_number] }}</td>
@@ -583,7 +611,7 @@ function closeNewIncidentDialog() {
                         <td>{{ item.date }}</td>
                         <td>{{ item.time }}</td>
                         <td>{{ item.block }}</td>
-                        
+                        <td><button class="button" type="button" @click="deleteCrime(item)">Delete</button></td>
                     </tr>
                 </tbody>
             </table>
@@ -592,6 +620,7 @@ function closeNewIncidentDialog() {
 </template>
   
 <style>
+
 .entryField{
     width: 9rem;
 }
@@ -600,10 +629,10 @@ function closeNewIncidentDialog() {
 }
 
 #new-incident-dialog {
-  width: 800px; /* Adjust the width as needed */
+  width: 800px; 
   background-color: #f1f1f1;
-  max-width: 100%; /* Ensure it doesn't exceed the screen width */
-  margin: auto; /* Center the form horizontally */
+  max-width: 100%; 
+  margin: auto; 
 }
 
 #rest-dialog {
