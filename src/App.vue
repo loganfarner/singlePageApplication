@@ -161,7 +161,7 @@ function initializeCrimes() {
         }
     }
     if (neighborhood_checkboxes[16].checked == false){
-            neighborhoodNubmers = neighborhoodNubmers.replace("17", "");
+            neighborhoodNubmers = neighborhoodNubmers.replace(",17", "");
         }
     if (neighborhoodNubmers.length > 0){
         url = url + 'neighborhood='+neighborhoodNubmers+'&';
@@ -175,7 +175,7 @@ function initializeCrimes() {
     } 
     codes = codes.slice(0,codes.length-1);
     if (codes.length > 0){
-        url = url + 'codes='+codes+'&'
+        url = url + 'code='+codes+'&'
     }
     let limit_input = document.getElementById("limit");
     if (limit_input.value != 1000 ){
