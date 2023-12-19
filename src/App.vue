@@ -458,13 +458,16 @@ async function deleteCrime(crime) {
 <template>
     <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
     </head>
     <body>
 
-    <div class="topnav">
-        <a @click="openNewIncidentDialog">New Incident</a>
-        <a href="App.vue">Home</a>
-        <a href="../aboutTheProject.html">About</a>
+    <div class="top-bar" id="topnav">
+        <div class="grid-container grid-padding-x align-center">
+            <a @click="openNewIncidentDialog">New Incident</a>
+            <a href="/">Home</a>
+            <a href="/aboutTheProject.html">About</a>
+        </div>
     </div>
 
     <div style="padding-left:16px">
@@ -556,13 +559,14 @@ async function deleteCrime(crime) {
             <input type="date" id="start" class="entryField">
             <label id="inputs">End Date: </label>
             <input type="date" id="end" class="entryField">
-            <label id="inputs">Max Incidents: </label>
+            <label id="inputs">Max Incidents to Show: </label>
             <p style="font-size: small;margin-bottom: 0rem;">Min: 1 & Max: 2000</p>
             <input type="number" id="limit" class="entryField" defaultValue="1000">
             <input type="submit" value="Submit" @click="initializeCrimes" style="background-color: #fff;font-weight: bold;padding: 1rem;"> 
         </div>
-
+        </div>
         <div>
+        <div class="grid-container" style="clear: both;">
             <div id="rowKey">
                 <p>Table Row Color Key</p>
                 <p style="background-color: #ff928b;">Violent Crimes</p>
@@ -589,7 +593,7 @@ async function deleteCrime(crime) {
                         <td style="min-width: 7rem;">{{ item.date }}</td>
                         <td>{{ item.time }}</td>
                         <td>{{ item.block }}</td>
-                        <td><button class="button" type="button" @click="deleteCrime(item)" style="margin-bottom: 0rem; padding: 0.625rem;">Delete</button></td>
+                        <td><button v-if="item.code" class="button" type="button" @click="deleteCrime(item)" style="margin-bottom: 0rem; padding: 0.625rem;">Delete</button></td>
                     </tr>
                 </tbody>
             </table>
@@ -599,16 +603,16 @@ async function deleteCrime(crime) {
 </template>
   
 <style>
-#rowKey, p {
-    clear: both; 
+#rowKey p {
     margin:0;
-    width: 11rem;
     text-align: center;
     font-weight: bold;
-    outline: auto;
 }
+
 #rowKey {
     margin-bottom: 1rem;
+    outline: auto;
+    width: 11rem;
 }
 
 tbody td{
@@ -664,26 +668,27 @@ body {
     font-family: Arial, Helvetica, sans-serif;
 }
 
-.topnav {
+#topnav {
     overflow: hidden;
     background-color: royalblue;
+
 }
 
-.topnav a {
-    float: left;
+#topnav a {
     color: #f2f2f2;
     text-align: center;
-    padding: 24px 10rem;
+    padding: 1rem;
     text-decoration: none;
     font-size: 24px;
+    margin: 0rem 6rem;
 }
 
-.topnav a:hover {
+#topnav a:hover {
     background-color: #ddd;
     color: black;
 }
 
-.topnav a.active {
+#topnav a.active {
     color: white;
 }
 
