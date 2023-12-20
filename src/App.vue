@@ -300,6 +300,40 @@ async function searchAndSetLocation() {
     }
 }
 
+async function removeDynamicMarker(dynamicMarker){
+    console.log('removing');
+    map.leaflet.removeLayer(dynamicMarker);
+}
+
+async function markSpecificLocation(item){
+    if (item.block.includes('AND')){
+        searchLocation.value = item.block.slice(0,item.block.indexOf('AND')-1)+', Saint Paul, Minnesota';
+    } else {
+        searchLocation.value = item.block.replace("XX",'')+', Saint Paul, Minnesota';
+    }
+    console.log(searchLocation.value);
+
+    // Icon options
+    var iconOptions = {
+    iconUrl: '/images/red_icon.png',
+    iconSize: [25, 40]
+    }
+
+    // Creating a custom icon
+    var customIcon = L.icon(iconOptions);
+    
+    await searchAndSetLocation();
+    const dynamicMarker = L.marker([map.center.lat, map.center.lng], {icon: customIcon}).addTo(map.leaflet);
+    const content = `<p>Incident: ${incident_type[Math.floor(item.code/100)]}</p>`+
+                            `<p>Neighborhood: ${neighborhood_names[item.neighborhood_number]}</p>` +
+                            `<p>Time: ${item.time}</p>`+
+                            `<p>Date: ${item.date}</p>`+
+                            `<button class='button' type='button' @click=${map.leaflet.removeLayer(dynamicMarker)}>Remove Marker</button>`;
+
+    dynamicMarker.bindPopup(content);
+    dynamicMarker.addTo(map.leaflet);
+}
+
 let neighborhood_names = {
     1: 'Conway/Battlecreek/Highwood',
     2: 'Greater East Side',
@@ -562,7 +596,7 @@ async function deleteCrime(crime) {
             <label id="inputs">Max Incidents to Show: </label>
             <p style="font-size: small;margin-bottom: 0rem;">Min: 1 & Max: 2000</p>
             <input type="number" id="limit" class="entryField" defaultValue="1000">
-            <input type="submit" value="Submit" @click="initializeCrimes" style="background-color: #fff;font-weight: bold;padding: 1rem;"> 
+            <input type="submit" value="Submit" @click=initializeCrimes style="background-color: #fff;font-weight: bold;padding: 1rem;"> 
         </div>
         </div>
         <div>
@@ -592,7 +626,7 @@ async function deleteCrime(crime) {
                         <td>{{ incident_type[Math.floor(item.code/100)] }}</td>
                         <td style="min-width: 7rem;">{{ item.date }}</td>
                         <td>{{ item.time }}</td>
-                        <td>{{ item.block }}</td>
+                        <td><a @click="markSpecificLocation(item)">{{ item.block }}</a></td>
                         <td><button v-if="item.code" class="button" type="button" @click="deleteCrime(item)" style="margin-bottom: 0rem; padding: 0.625rem;">Delete</button></td>
                     </tr>
                 </tbody>
